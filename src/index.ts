@@ -12,10 +12,31 @@ const app = new Hono();
 
 app.get("/", async (c) => {
   const html = await readFile(
+    join(__dirname, "..", "public", "landing.html"),
+    "utf-8"
+  );
+  return c.html(html);
+});
+
+app.get("/app", async (c) => {
+  const html = await readFile(
     join(__dirname, "..", "public", "index.html"),
     "utf-8"
   );
   return c.html(html);
+});
+
+app.get("/download", async (c) => {
+  const script = await readFile(
+    join(__dirname, "..", "public", "lumellum.sh"),
+    "utf-8"
+  );
+  return new Response(script, {
+    headers: {
+      "Content-Type": "text/x-shellscript",
+      "Content-Disposition": 'attachment; filename="lumellum.sh"',
+    },
+  });
 });
 
 app.post("/chat", async (c) => {

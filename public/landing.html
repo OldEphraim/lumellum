@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumellum — sharpen your thoughts</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f0d09;
+  --surface: #1a1510;
+  --accent: #c8a96e;
+  --text: #e8d9b8;
+  --muted: #8a7a5a;
+}
+
+body {
+  font-family: "Courier New", Courier, monospace;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Utility */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Hero */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.hero h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(4rem, 10vw, 9rem);
+  letter-spacing: 0.3em;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-weight: 400;
+  margin-right: -0.3em;
+}
+
+.hero .subtitle {
+  font-size: clamp(0.9rem, 2vw, 1.2rem);
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 0.5rem;
+  letter-spacing: 0.1em;
+}
+
+.hero .cta-group {
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-primary {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.9rem 2.4rem;
+  border-radius: 4px;
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-primary:hover {
+  background: #dabb7e;
+  transform: translateY(-1px);
+}
+
+.link-secondary {
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.link-secondary:hover {
+  color: var(--accent);
+}
+
+/* Section shared */
+section {
+  padding: 6rem 2rem;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+section h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.8rem;
+  color: var(--accent);
+  text-align: center;
+  letter-spacing: 0.15em;
+  margin-bottom: 3rem;
+  font-weight: 400;
+}
+
+/* Process timeline */
+.process {
+  background: var(--surface);
+}
+
+.timeline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  top: 2.2rem;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: var(--muted);
+}
+
+.stage {
+  flex: 1;
+  text-align: center;
+  padding: 0 0.8rem;
+  position: relative;
+  z-index: 1;
+}
+
+.stage .icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+  height: 2.8rem;
+  line-height: 2.8rem;
+}
+
+.stage .dot {
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+}
+
+.stage .latin {
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--accent);
+  font-size: 1rem;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+}
+
+.stage .desc {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Features */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.feature {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  border: 1px solid #2a1f14;
+  border-radius: 6px;
+  background: var(--surface);
+}
+
+.feature .icon {
+  font-size: 1.8rem;
+  display: block;
+  margin-bottom: 1rem;
+  color: var(--accent);
+}
+
+.feature h3 {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1rem;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+  font-weight: 400;
+}
+
+.feature p {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 3rem 2rem;
+  border-top: 1px solid #1a1510;
+  color: var(--muted);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .timeline {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .timeline::before {
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    right: auto;
+    width: 1px;
+    height: 100%;
+  }
+
+  .stage {
+    max-width: 300px;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
+
+  section {
+    padding: 4rem 1.5rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<section class="hero visible">
+  <h1>Lumellum</h1>
+  <p class="subtitle">sharpen your thoughts</p>
+  <div class="cta-group">
+    <a href="/download" class="btn-primary">Download for macOS / Linux</a>
+    <a href="/app" class="link-secondary">or open the web app →</a>
+  </div>
+</section>
+
+<section class="process">
+  <div class="container">
+    <h2>The Ancient Craft of Vellum</h2>
+    <div class="timeline">
+      <div class="stage">
+        <span class="icon">💧</span>
+        <div class="dot"></div>
+        <div class="latin">Maceratio</div>
+        <p class="desc">The raw hide is submerged in a bath of lime water, where it soaks for days. This alkaline solution loosens hair and dissolves unwanted proteins from the skin.</p>
+      </div>
+      <div class="stage">
+        <span class="icon">🪢</span>
+        <div class="dot"></div>
+        <div class="latin">Tensio</div>
+        <p class="desc">The softened hide is lashed to a wooden frame with ropes and pegs. Careful, even tension is applied on all sides to begin transforming skin into a writing surface.</p>
+      </div>
+      <div class="stage">
+        <span class="icon">🔪</span>
+        <div class="dot"></div>
+        <div class="latin">Rasura</div>
+        <p class="desc">A crescent-shaped lunellum knife is drawn across the stretched hide. Fat, flesh, and remaining hair are scraped away in long, steady strokes.</p>
+      </div>
+      <div class="stage">
+        <span class="icon">🌬</span>
+        <div class="dot"></div>
+        <div class="latin">Siccatio</div>
+        <p class="desc">Still on the frame, the hide is left to dry slowly in open air. As moisture leaves, the skin tightens and becomes thin and translucent.</p>
+      </div>
+      <div class="stage">
+        <span class="icon">✨</span>
+        <div class="dot"></div>
+        <div class="latin">Politio</div>
+        <p class="desc">A pumice stone is rubbed across the dried surface in gentle circles. This final polishing creates the smooth, silky finish that accepts ink beautifully.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container">
+    <h2>What Lumellum Does</h2>
+    <div class="features-grid">
+      <div class="feature">
+        <span class="icon">⚔</span>
+        <h3>Web search</h3>
+        <p>Draws from the living archive of the internet to find current information, references, and answers.</p>
+      </div>
+      <div class="feature">
+        <span class="icon">⌘</span>
+        <h3>Terminal access</h3>
+        <p>Executes commands on your machine directly — file operations, git, scripts, and more.</p>
+      </div>
+      <div class="feature">
+        <span class="icon">✦</span>
+        <h3>Zero configuration</h3>
+        <p>One script, one conversation, done. No frameworks, no plugins, no accounts to create.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Lumellum is open source and free to use. Bring your own API keys.
+</footer>
+
+<script>
+(function() {
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll("section:not(.visible)").forEach(function(el) {
+    observer.observe(el);
+  });
+})();
+</script>
+</body>
+</html>

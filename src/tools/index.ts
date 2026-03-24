@@ -1,5 +1,6 @@
 import type { Tool } from "@anthropic-ai/sdk/resources/messages.js";
 import { webSearch } from "./webSearch.js";
+import { runCommand } from "./terminal.js";
 
 export const TOOLS: Tool[] = [
   {
@@ -14,6 +15,19 @@ export const TOOLS: Tool[] = [
       required: ["query"],
     },
   },
+  {
+    name: "run_terminal_command",
+    description:
+      "Run a terminal command on the user's machine and return the output. Use for file operations, git commands, running scripts, checking system state, or anything that requires shell access.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        command: { type: "string" as const, description: "The shell command to execute" },
+        cwd: { type: "string" as const, description: "Working directory for the command" },
+      },
+      required: ["command"],
+    },
+  },
 ];
 
 export async function executeTool(
@@ -22,6 +36,12 @@ export async function executeTool(
 ): Promise<string> {
   if (name === "web_search") {
     return webSearch(input["query"] as string);
+  }
+  if (name === "run_terminal_command") {
+    return runCommand(
+      input["command"] as string,
+      input["cwd"] as string | undefined
+    );
   }
   return `Unknown tool: ${name}`;
 }
