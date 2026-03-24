@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumellum</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Courier New", Courier, monospace;
+  background: #1a1510;
+  color: #e8d9b8;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  text-align: center;
+  padding: 1.2rem 1rem 0.6rem;
+  border-bottom: 1px solid #2a1f14;
+}
+
+header h1 {
+  font-size: 1.6rem;
+  color: #c8a96e;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+header p {
+  font-size: 0.85rem;
+  color: #8a7a5e;
+  font-style: italic;
+  margin-top: 0.2rem;
+}
+
+#chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.msg {
+  max-width: 75%;
+  padding: 0.7rem 1rem;
+  border-radius: 6px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 0.9rem;
+}
+
+.msg.user {
+  align-self: flex-end;
+  background: #2a1f14;
+  border: 1px solid #3a2f24;
+}
+
+.msg.assistant {
+  align-self: flex-start;
+  background: #1f1a10;
+  border: 1px solid #2f2a1a;
+}
+
+.msg code {
+  background: #2a2518;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.85em;
+}
+
+.msg strong { color: #c8a96e; }
+
+.cursor-blink::after {
+  content: "▍";
+  animation: blink 0.8s step-end infinite;
+  color: #c8a96e;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+#input-area {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #2a1f14;
+  background: #1a1510;
+}
+
+#input-area textarea {
+  flex: 1;
+  background: #1f1a10;
+  color: #e8d9b8;
+  border: 1px solid #2a1f14;
+  border-radius: 4px;
+  padding: 0.6rem 0.8rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: none;
+  outline: none;
+  min-height: 2.4rem;
+  max-height: 8rem;
+}
+
+#input-area textarea::placeholder { color: #6a5a3e; }
+#input-area textarea:focus { border-color: #c8a96e; }
+
+#input-area button {
+  background: #2a1f14;
+  color: #c8a96e;
+  border: 1px solid #3a2f24;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#input-area button:hover { background: #3a2f24; }
+
+#reset-btn {
+  position: absolute;
+  top: 0.8rem;
+  right: 1rem;
+  background: none;
+  border: 1px solid #3a2f24;
+  color: #8a7a5e;
+  font-family: inherit;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#reset-btn:hover { color: #c8a96e; border-color: #c8a96e; }
+
+header { position: relative; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Lumellum</h1>
+  <p>sharpen your thoughts</p>
+  <button id="reset-btn">✦ New scroll</button>
+</header>
+<div id="chat"></div>
+<div id="input-area">
+  <textarea id="input" rows="1" placeholder="inscribe your query..."></textarea>
+  <button id="send-btn">Send</button>
+</div>
+<script>
+(function() {
+  const chat = document.getElementById("chat");
+  const input = document.getElementById("input");
+  const sendBtn = document.getElementById("send-btn");
+  const resetBtn = document.getElementById("reset-btn");
+
+  let sessionId = genId();
+  let sending = false;
+
+  function genId() {
+    const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    let id = "";
+    for (let i = 0; i < 8; i++) id += chars[Math.floor(Math.random() * chars.length)];
+    return id;
+  }
+
+  function renderMarkdown(text) {
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/\n/g, "<br>");
+  }
+
+  function addMessage(role, text) {
+    const div = document.createElement("div");
+    div.className = "msg " + role;
+    div.innerHTML = renderMarkdown(text);
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    return div;
+  }
+
+  function autoResize() {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 128) + "px";
+  }
+
+  input.addEventListener("input", autoResize);
+
+  input.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  });
+
+  sendBtn.addEventListener("click", send);
+
+  resetBtn.addEventListener("click", async function() {
+    await fetch("/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId: sessionId })
+    });
+    chat.innerHTML = "";
+    sessionId = genId();
+  });
+
+  async function send() {
+    if (sending) return;
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = "";
+    autoResize();
+    addMessage("user", text);
+
+    sending = true;
+    sendBtn.disabled = true;
+
+    const assistantDiv = document.createElement("div");
+    assistantDiv.className = "msg assistant cursor-blink";
+    chat.appendChild(assistantDiv);
+    chat.scrollTop = chat.scrollHeight;
+
+    let fullText = "";
+
+    try {
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: sessionId, message: text })
+      });
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6);
+          if (data === "[DONE]") continue;
+          fullText += data;
+          assistantDiv.innerHTML = renderMarkdown(fullText);
+          chat.scrollTop = chat.scrollHeight;
+        }
+      }
+    } catch {
+      fullText += "\n\n⚠️ Connection lost.";
+    }
+
+    assistantDiv.classList.remove("cursor-blink");
+    assistantDiv.innerHTML = renderMarkdown(fullText);
+    sending = false;
+    sendBtn.disabled = false;
+    input.focus();
+  }
+
+  input.focus();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Environment
+.env
+
+# Dependencies
+node_modules/
+
+# TypeScript build output
+dist/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Editor
+.cursor/
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
