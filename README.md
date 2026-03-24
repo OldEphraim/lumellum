@@ -9,6 +9,8 @@ This is the knife for your thoughts.
 4. `docker compose up`
 5. Open [http://localhost:3000](http://localhost:3000)
 
+Live demo: https://lumellum-production.up.railway.app
+
 ## Files
 
 - `src/index.ts` — Hono HTTP server, serves static files and API routes
